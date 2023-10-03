@@ -41,22 +41,7 @@ class Config:
         self.robot_width = 0.5  # [m] for collision check
         self.robot_length = 1.2  # [m] for collision check
         # obstacles [x(m) y(m), ....]
-        # self.ob = np.array([[-1, -1],
-        #                     [0, 2],
-        #                     [4.0, 2.0],
-        #                     [5.0, 4.0],
-        #                     [5.0, 5.0],
-        #                     [5.0, 6.0],
-        #                     [5.0, 9.0],
-        #                     [8.0, 9.0],
-        #                     [7.0, 9.0],
-        #                     [8.0, 10.0],
-        #                     [9.0, 11.0],
-        #                     [12.0, 13.0],
-        #                     [12.0, 12.0],
-        #                     [15.0, 15.0],
-        #                     [13.0, 13.0]
-        #                     ])
+
 
         self.ob = np.array(ob)
 
