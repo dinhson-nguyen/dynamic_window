@@ -7,25 +7,25 @@ class RandomMap:
     def __init__(self, size=20):
         self.size = size
         # self.obstacle = size//8
-        self.obstacle = 5
+        self.obstacle = 2
         self.GenerateObstacle()
         # self.risk()
 
     def GenerateObstacle(self):
         self.obstacle_point = []
-        z = np.random.randint(1, 2)
-        for t in range(0, z + 1):
-            for g in range(0, z + 1):
+        z = np.random.randint(2, 4)
+        for t in range(1, z + 1):
+            for g in range(1, z + 1):
                 self.obstacle_point.append(Point.Point(self.size // 2 + t, self.size // 2 + g))
 
         for i in range(self.obstacle - 1):
-            x = np.random.randint(0, self.size - 3)
-            y = np.random.randint(0, self.size - 3)
+            x = np.random.randint(2, self.size - 3)
+            y = np.random.randint(2, self.size - 3)
             self.obstacle_point.append(Point.Point(x, y))
 
             # if (np.random.rand() > 0.5): # Random boolean
             if True:  # Random boolean
-                z = np.random.randint(1, 2)
+                z = np.random.randint(5, 8)
                 for t in range(0, z + 1):
                     for g in range(0, z + 1):
                         self.obstacle_point.append(Point.Point(x + g, y + t))

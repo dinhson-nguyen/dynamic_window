@@ -15,7 +15,7 @@ def dwa_control(x, config, goal, ob):
     dw = calc_dynamic_window(x, config)
 
     u, trajectory = calc_control_and_trajectory(x, dw, config, goal, ob)
-
+    print(u)
     return u, trajectory
 
 
@@ -75,7 +75,8 @@ def predict_trajectory(x_init, v, y, config):
         x = motion(x, [v, y], config.dt)
         trajectory = np.vstack((trajectory, x))
         time += config.dt
-
+    # print(trajectory)
+    # print(len(trajectory))
     return trajectory
 
 
@@ -102,17 +103,27 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
             final_cost = to_goal_cost + speed_cost + ob_cost
 
             # search minimum trajectory
-            if min_cost >= final_cost:
-                min_cost = final_cost
-                best_u = [v, y]
-                best_trajectory = trajectory
-                if abs(best_u[0]) < config.robot_stuck_flag_cons \
+            if min_cost >= final_cost :
+
+
+                if abs(v) < config.robot_stuck_flag_cons \
                         and abs(x[3]) < config.robot_stuck_flag_cons:
                     # to ensure the robot do not get stuck in
                     # best v=0 m/s (in front of an obstacle) and
                     # best omega=0 rad/s (heading to the goal with
                     # angle difference of 0)
                     best_u[1] = -config.max_delta_yaw_rate
+                    # best_u[0] = config.v_resolution
+                    best_u[0] = 0
+                    continue
+
+                min_cost = final_cost
+                best_u = [v, y]
+                best_trajectory = trajectory
+
+
+
+
     return best_u, best_trajectory
 
 
@@ -134,10 +145,10 @@ def calc_obstacle_cost(trajectory, ob, config):
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
         local_ob = np.array([local_ob @ x for x in rot])
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
-        upper_check = local_ob[:, 0] <= config.robot_length / 2
-        right_check = local_ob[:, 1] <= config.robot_width / 2
-        bottom_check = local_ob[:, 0] >= -config.robot_length / 2
-        left_check = local_ob[:, 1] >= -config.robot_width / 2
+        upper_check = local_ob[:, 0] <= config.robot_length / 2 + 0.3
+        right_check = local_ob[:, 1] <= config.robot_width / 2 + 0.3
+        bottom_check = local_ob[:, 0] >= -config.robot_length / 2 - 0.3
+        left_check = local_ob[:, 1] >= -config.robot_width / 2 - 0.3
         if (np.logical_and(np.logical_and(upper_check, right_check),
                            np.logical_and(bottom_check, left_check))).any():
             return float("Inf")
@@ -170,6 +181,7 @@ def plot_arrow(x, y, yaw, length=0.5, width=0.1):  # pragma: no cover
 
 
 def plot_robot(x, y, yaw, config):  # pragma: no cover
+    ax = plt.gca()
     if config.robot_type == RobotType.rectangle:
         outline = np.array([[-config.robot_length / 2, config.robot_length / 2,
                              (config.robot_length / 2), -config.robot_length / 2,
@@ -182,12 +194,12 @@ def plot_robot(x, y, yaw, config):  # pragma: no cover
         outline = (outline.T.dot(Rot1)).T
         outline[0, :] += x
         outline[1, :] += y
-        plt.plot(np.array(outline[0, :]).flatten(),
+        ax.plot(np.array(outline[0, :]).flatten(),
                  np.array(outline[1, :]).flatten(), "-k")
     elif config.robot_type == RobotType.circle:
         circle = plt.Circle((x, y), config.robot_radius, color="b")
         plt.gcf().gca().add_artist(circle)
         out_x, out_y = (np.array([x, y]) +
                         np.array([np.cos(yaw), np.sin(yaw)]) * config.robot_radius)
-        plt.plot([x, out_x], [y, out_y], "-k")
+        ax.plot([x, out_x], [y, out_y], "-k")
 

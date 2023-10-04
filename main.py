@@ -5,12 +5,14 @@ from matplotlib.patches import Rectangle
 
 
 show_animation = True
-ax = plt.gca()
+fig, ax = plt.subplots()
+ax.set_xlim(0, 20)
+ax.set_ylim(0, 20)
 config = Config()
 def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
     print(__file__ + " start!!")
     # initial state [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
-    x = np.array([0.0, 0.0, math.pi / 8.0, 0.0, 0.0])
+    x = np.array([0.0, 0.0, math.pi / 8.0, 0.2, 0.5])
     # goal position [x(m), y(m)]
     goal = np.array([gx, gy])
 
@@ -27,20 +29,18 @@ def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
         x = motion(x, u, config.dt)  # simulate robot
         trajectory = np.vstack((trajectory, x))  # store state history
 
-
+        x_limits = ax.get_xlim()
+        y_limits = ax.get_ylim()
         if show_animation:
-            plt.xlim(0, 20)
-            plt.ylim(0, 20)
-            plt.cla()
-            plt.xlim(0, 20)
-            plt.ylim(0, 20)
+            ax.clear()
+
             # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect(
-                'key_release_event',
-                lambda event: [exit(0) if event.key == 'escape' else None])
-            plt.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
-            plt.plot(x[0], x[1], "xr")
-            plt.plot(goal[0], goal[1], "xb")
+            # plt.gcf().canvas.mpl_connect(
+            #     'key_release_event',
+            #     lambda event: [exit(0) if event.key == 'escape' else None])
+            ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
+            ax.plot(x[0], x[1], "xr")
+            ax.plot(goal[0], goal[1], "xb")
             # plt.plot(ob[:, 0], ob[:, 1], 's', color='black', markersize=5)
             # plt.plot(config.ob[:, 0], config.ob[:, 1], "ok")
             for item in ob:
@@ -48,11 +48,13 @@ def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
                 ax.add_patch(rec)
             plot_robot(x[0], x[1], x[2], config)
             plot_arrow(x[0], x[1], x[2])
-            plt.axis('equal')
-            plt.axis('on')
+            ax.axis('equal')
+            ax.axis('on')
             # plt.tight_layout()
 
-            plt.grid(color='green', linestyle='--', linewidth=0.5)
+            ax.grid(color='green', linestyle='--', linewidth=0.5)
+            ax.set_xlim(x_limits)
+            ax.set_ylim(y_limits)
             plt.pause(0.0001)
 
         # check reaching goal
