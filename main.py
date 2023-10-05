@@ -1,16 +1,41 @@
+import time
 
 from dynamic_window import *
 from matplotlib.patches import Rectangle
+import threading
+import queue
 
-
-
+data_queue = queue.Queue()
 show_animation = True
-fig, ax = plt.subplots()
-ax.set_xlim(0, 20)
-ax.set_ylim(0, 20)
+
 config = Config()
-def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
+
+
+def producer(data_queue):
+    ob = config.ob
+    n =0
+    while True:
+        n= n+0.1
+        m = []
+        t = [0.5,0.5]
+        # Thực hiện các tác vụ và tạo dữ liệu
+        for item in ob:
+            m.append([item[0] + t[0]*n,item[1] - t[1]*n])
+            # item[0] = item[0] + t[0]
+            # item[1] = item[1] + t[1]
+        # Đưa dữ liệu vào hàng đợi
+        data_queue.put(np.array(m))
+        # print(m)
+        time.sleep(0.1)
+        # print("pass")
+def consumer(data_queue):
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0, 20)
     print(__file__ + " start!!")
+    gx = 20.0
+    gy = 20.0
+    robot_type = RobotType.rectangle
     # initial state [x(m), y(m), yaw(rad), v(m/s), omega(rad/s)]
     x = np.array([0.0, 0.0, math.pi / 8.0, 0.2, 0.5])
     # goal position [x(m), y(m)]
@@ -20,10 +45,12 @@ def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
 
     config.robot_type = robot_type
     trajectory = np.array(x)
-    ob = config.ob
+    # ob = config.ob
 
     l=0
     while True:
+        ob = data_queue.get()
+        print(ob)
         l +=1
         u, predicted_trajectory = dwa_control(x, config, goal, ob)
         x = motion(x, u, config.dt)  # simulate robot
@@ -63,7 +90,7 @@ def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
             print("Goal!!")
             break
 
-    print(l)
+    # print(l)
 
 
     print("Done")
@@ -74,6 +101,3 @@ def main(gx=20.0, gy=20.0, robot_type=RobotType.circle):
 
 
 
-if __name__ == '__main__':
-    main(robot_type=RobotType.rectangle)
-    # main(robot_type=RobotType.circle)

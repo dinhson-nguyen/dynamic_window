@@ -13,7 +13,7 @@ class RandomMap:
 
     def GenerateObstacle(self):
         self.obstacle_point = []
-        z = np.random.randint(2, 4)
+        z = np.random.randint(4, 6)
         for t in range(1, z + 1):
             for g in range(1, z + 1):
                 self.obstacle_point.append(Point.Point(self.size // 2 + t, self.size // 2 + g))
@@ -69,3 +69,4 @@ class RandomMap:
     #         if i == p.x and j == p.y:
     #             return True
     #     return False
+
