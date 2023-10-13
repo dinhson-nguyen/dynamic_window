@@ -1,37 +1,38 @@
 import time
-
+import numpy as np
 from dynamic_window import *
 from matplotlib.patches import Rectangle
 import threading
 import queue
 
 data_queue = queue.Queue()
+data_queue2 = queue.Queue()
 show_animation = True
-
 config = Config()
-
-
-def producer(data_queue):
+def producer(data_queue,data_queue2):
     ob = config.ob
+    riskinside = config.riskinside
     n =0
     while True:
         n= n+0.1
         m = []
+        riskinside_1= []
         t = [0.5,0.5]
         # Thực hiện các tác vụ và tạo dữ liệu
         for item in ob:
             m.append([item[0] + t[0]*n,item[1] - t[1]*n])
-            # item[0] = item[0] + t[0]
-            # item[1] = item[1] + t[1]
+        for item in riskinside:
+            riskinside_1.append([item[0] + t[0]*n,item[1] - t[1]*n])
         # Đưa dữ liệu vào hàng đợi
         data_queue.put(np.array(m))
+        data_queue2.put(np.array(riskinside_1))
         # print(m)
         time.sleep(0.1)
         # print("pass")
-def consumer(data_queue):
+def consumer(data_queue,data_queue2):
     fig, ax = plt.subplots()
-    ax.set_xlim(0, 20)
-    ax.set_ylim(0, 20)
+    ax.set_xlim(-1, 25)
+    ax.set_ylim(-1, 25)
     print(__file__ + " start!!")
     gx = 20.0
     gy = 20.0
@@ -42,43 +43,53 @@ def consumer(data_queue):
     goal = np.array([gx, gy])
 
     # input [forward speed, yaw_rate]
-
     config.robot_type = robot_type
     trajectory = np.array(x)
-    # ob = config.ob
-
     l=0
+    plt.pause(20)
     while True:
-        ob = data_queue.get()
-        print(ob)
+        m = data_queue.get()
+        t = [0.5, 0.5]
+        ob=[]
+        for item in m:
+            ob.append([item[0] + t[0],item[1] - t[1]])
+        ob = np.array(ob)
+        riskinside_1 = data_queue2.get()
         l +=1
-        u, predicted_trajectory = dwa_control(x, config, goal, ob)
+        u, predicted_trajectory,remove_traject = dwa_control(x, config, goal, ob)
+        # print(len(remove_traject))
         x = motion(x, u, config.dt)  # simulate robot
         trajectory = np.vstack((trajectory, x))  # store state history
-
+        time.sleep(0.05)
         x_limits = ax.get_xlim()
         y_limits = ax.get_ylim()
+
         if show_animation:
             ax.clear()
-
+            ax.axis('equal')
+            ax.axis('on')
             # for stopping simulation with the esc key.
-            # plt.gcf().canvas.mpl_connect(
-            #     'key_release_event',
-            #     lambda event: [exit(0) if event.key == 'escape' else None])
+            plt.gcf().canvas.mpl_connect(
+                'key_release_event',
+                lambda event: [exit(0) if event.key == 'escape' else None])
+            for item in remove_traject:
+                ax.plot(item[:, 0], item[:, 1], linestyle='dashed',color='palegreen')
             ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
             ax.plot(x[0], x[1], "xr")
             ax.plot(goal[0], goal[1], "xb")
-            # plt.plot(ob[:, 0], ob[:, 1], 's', color='black', markersize=5)
-            # plt.plot(config.ob[:, 0], config.ob[:, 1], "ok")
-            for item in ob:
+            for item in m:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='black')
+                ax.add_patch(rec)
+            for item in riskinside_1:
+                rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
                 ax.add_patch(rec)
             plot_robot(x[0], x[1], x[2], config)
             plot_arrow(x[0], x[1], x[2])
-            ax.axis('equal')
-            ax.axis('on')
-            # plt.tight_layout()
 
+            for item in config.block:
+                rec = Rectangle((item[0], item[1]), width=item[2]+1, height=item[2]+1, edgecolor='darkblue',
+                           fill=False)
+                ax.add_patch(rec)
             ax.grid(color='green', linestyle='--', linewidth=0.5)
             ax.set_xlim(x_limits)
             ax.set_ylim(y_limits)
@@ -90,13 +101,13 @@ def consumer(data_queue):
             print("Goal!!")
             break
 
-    # print(l)
-
 
     print("Done")
     if show_animation:
+        
         plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")
         plt.pause(0.0001)
+
         plt.show()
 
 

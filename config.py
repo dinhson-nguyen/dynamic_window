@@ -6,8 +6,11 @@ import obstacle
 
 m = obstacle.RandomMap()
 ob = []
+riskinside = []
 for z in m.obstacle_point:
     ob.append([z.x,z.y])
+for z in m.risk_inside:
+    riskinside.append([z.x,z.y])
 class RobotType(Enum):
     circle = 0
     rectangle = 1
@@ -41,8 +44,8 @@ class Config:
         self.robot_width = 0.5  # [m] for collision check
         self.robot_length = 1.0  # [m] for collision check
         # obstacles [x(m) y(m), ....]
-
-
+        self.riskinside = np.array(riskinside)
+        self.block = m.block
         self.ob = np.array(ob)
 
     @property

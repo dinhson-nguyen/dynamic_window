@@ -14,9 +14,9 @@ def dwa_control(x, config, goal, ob):
     """
     dw = calc_dynamic_window(x, config)
 
-    u, trajectory = calc_control_and_trajectory(x, dw, config, goal, ob)
-    print(u)
-    return u, trajectory
+    u, trajectory,remove_traject = calc_control_and_trajectory(x, dw, config, goal, ob)
+    # print(u)
+    return u, trajectory,remove_traject
 
 
 
@@ -89,7 +89,8 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
     min_cost = float("inf")
     best_u = [0.0, 0.0]
     best_trajectory = np.array([x])
-
+    # second_u= []
+    remove_traject = []
     # evaluate all trajectory with sampled input in dynamic window
     for v in np.arange(dw[0], dw[1], config.v_resolution):
         for y in np.arange(dw[2], dw[3], config.yaw_rate_resolution):
@@ -121,10 +122,11 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
                 best_u = [v, y]
                 best_trajectory = trajectory
 
+            remove_traject.append(trajectory)
 
 
 
-    return best_u, best_trajectory
+    return best_u, best_trajectory, remove_traject
 
 
 def calc_obstacle_cost(trajectory, ob, config):
