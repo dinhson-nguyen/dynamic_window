@@ -54,6 +54,7 @@ def consumer(data_queue,data_queue2):
         for item in m:
             ob.append([item[0] + t[0],item[1] - t[1]])
         ob = np.array(ob)
+        static_ob = np.array(st)
         riskinside_1 = data_queue2.get()
         l +=1
         u, predicted_trajectory,remove_traject = dwa_control(x, config, goal, ob)
