@@ -46,16 +46,21 @@ def consumer(data_queue,data_queue2):
     config.robot_type = robot_type
     trajectory = np.array(x)
     l=0
-    plt.pause(20)
+
     while True:
         m = data_queue.get()
         t = [0.5, 0.5]
         ob=[]
         for item in m:
             ob.append([item[0] + t[0],item[1] - t[1]])
-        ob = np.array(ob)
-        static_ob = np.array(st)
-        riskinside_1 = data_queue2.get()
+
+        ob = np.concatenate((config.static_ob,np.array(ob)))
+        # ob= np.array(ob)
+        # riskinside_1 = np.concatenate((data_queue2.get(),config.static_risk))
+        riskinside_1 = []
+        for item in data_queue2.get():
+            riskinside_1.append([item[0] + t[0],item[1] - t[1]])
+        riskinside_2 = config.static_risk
         l +=1
         u, predicted_trajectory,remove_traject = dwa_control(x, config, goal, ob)
         # print(len(remove_traject))
@@ -65,28 +70,33 @@ def consumer(data_queue,data_queue2):
         x_limits = ax.get_xlim()
         y_limits = ax.get_ylim()
 
+
         if show_animation:
             ax.clear()
+            print(riskinside_1)
             ax.axis('equal')
             ax.axis('on')
             # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect(
-                'key_release_event',
-                lambda event: [exit(0) if event.key == 'escape' else None])
+
             for item in remove_traject:
                 ax.plot(item[:, 0], item[:, 1], linestyle='dashed',color='palegreen')
             ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
-            ax.plot(x[0], x[1], "xr")
+            plt.plot(x[0], x[1], "xr")
             ax.plot(goal[0], goal[1], "xb")
-            for item in m:
+
+            for item in ob:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='black')
                 ax.add_patch(rec)
             for item in riskinside_1:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
                 ax.add_patch(rec)
+            for item in riskinside_2:
+                rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
+                ax.add_patch(rec)
+
             plot_robot(x[0], x[1], x[2], config)
             plot_arrow(x[0], x[1], x[2])
-
+            plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")
             for item in config.block:
                 rec = Rectangle((item[0], item[1]), width=item[2]+1, height=item[2]+1, edgecolor='darkblue',
                            fill=False)

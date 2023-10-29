@@ -8,14 +8,14 @@ m = obstacle.RandomMap()
 ob = []
 riskinside = []
 static_ob= []
+static_risk = []
 for z in m.obstacle_point:
     ob.append([z.x,z.y])
 for z in m.risk_inside:
     riskinside.append([z.x,z.y])
-static_risk = []
 for z in m.staticObs:
     static_ob.append([z.x,z.y])
-for z in m.risk_inside:
+for z in m.static_risk_inside:
     static_risk.append([z.x,z.y])
 class RobotType(Enum):
     circle = 0
@@ -53,7 +53,8 @@ class Config:
         self.riskinside = np.array(riskinside)
         self.block = m.block
         self.ob = np.array(ob)
-        self.static_ob =
+        self.static_ob = np.array(static_ob)
+        self.static_risk = np.array(static_risk)
 
     @property
     def robot_type(self):

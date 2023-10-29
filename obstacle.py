@@ -8,9 +8,11 @@ class RandomMap:
         self.size = size
         # self.obstacle = size//8
         self.obstacle = 2
+        self.staticobstacle = 4
         self.GenerateObstacle()
         self.staticObstacle()
         self.risk()
+        self.static_risk()
 
     def GenerateObstacle(self):
         self.obstacle_point = []
@@ -27,7 +29,7 @@ class RandomMap:
 
             # if (np.random.rand() > 0.5): # Random boolean
             if True:  # Random boolean
-                z = np.random.randint(2, 3)
+                z = np.random.randint(1, 2)
                 for t in range(0, z + 1):
                     for g in range(0, z + 1):
                         self.obstacle_point.append(Point.Point(x + g, y + t))
@@ -35,22 +37,22 @@ class RandomMap:
         # return self.obstacle_point
     def staticObstacle(self):
         self.staticObs = []
-        z = np.random.randint(4, 6)
+        # z = np.random.randint(4, 6)
         # for t in range(1, z + 1):
         #     for g in range(1, z + 1):
         #         self.obstacle_point.append(Point.Point(self.size // 2 + t, self.size // 2 + g))
 
-        for i in range(self.obstacle ):
+        for i in range(self.staticobstacle ):
             x = np.random.randint(2, self.size - 5)
             y = np.random.randint(2, self.size - 5)
-            self.obstacle_point.append(Point.Point(x, y))
+            self.staticObs.append(Point.Point(x, y))
 
             # if (np.random.rand() > 0.5): # Random boolean
             if True:  # Random boolean
-                z = np.random.randint(3, 5)
+                z = np.random.randint(2, 3)
                 for t in range(0, z + 1):
                     for g in range(0, z + 1):
-                        self.obstacle_point.append(Point.Point(x + g, y + t))
+                        self.staticObs.append(Point.Point(x + g, y + t))
 
 
     def risk(self):
@@ -78,11 +80,11 @@ class RandomMap:
         self.static_risk_outside = []
         for t in range(self.size):
             for h in range(self.size):
-                if self.IsObstacle(t, h) == True:
+                if self.Is_static_Obstacle(t, h) == True:
                     for m in range(-1, 2, 1):
                         for n in range(-1, 2, 1):
-                            if self.IsObstacle(t + m, h + n) == False:
-                                self.risk_inside.append(Point.Point(t + m, h + n))
+                            if self.Is_static_Obstacle(t + m, h + n) == False:
+                                self.static_risk_inside.append(Point.Point(t + m, h + n))
 
         for t in range(self.size):
             for h in range(self.size):
@@ -92,7 +94,7 @@ class RandomMap:
                         for n in range(-1, 2, 1):
                             if self.Is_risk_inside(t + m, h + n) == False:
                                 if self.IsObstacle(t + m, h + n) == False:
-                                    self.risk_outside.append(Point.Point(t + m, h + n))
+                                    self.static_risk_outside.append(Point.Point(t + m, h + n))
 
     def Is_risk_inside(self, i, j):
         for p in self.risk_inside:
