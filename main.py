@@ -71,6 +71,7 @@ def consumer(data_queue,data_queue2):
         y_limits = ax.get_ylim()
 
 
+
         if show_animation:
             ax.clear()
             print(riskinside_1)
