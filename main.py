@@ -46,7 +46,7 @@ def consumer(data_queue,data_queue2):
     config.robot_type = robot_type
     trajectory = np.array(x)
     l=0
-
+    plt.pause(7)
     while True:
         m = data_queue.get()
         t = [0.5, 0.5]
@@ -76,16 +76,16 @@ def consumer(data_queue,data_queue2):
             ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
             plt.plot(x[0], x[1], "xr")
             ax.plot(goal[0], goal[1], "xb")
-            for item in ob:
-                rec = Rectangle((item[0]-0.5, item[1]-0.5), width=1, height=1, color='black')
-                ax.add_patch(rec)
+
             for item in riskinside_1:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
                 ax.add_patch(rec)
             for item in riskinside_2:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
                 ax.add_patch(rec)
-
+            for item in ob:
+                rec = Rectangle((item[0]-0.5, item[1]-0.5), width=1, height=1, color='black')
+                ax.add_patch(rec)
             plot_robot(x[0], x[1], x[2], config)
             plot_arrow(x[0], x[1], x[2])
             plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")

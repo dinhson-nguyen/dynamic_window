@@ -7,8 +7,8 @@ class RandomMap:
     def __init__(self, size=25):
         self.size = size
         # self.obstacle = size//8
-        self.obstacle = 2
-        self.staticobstacle = 4
+        self.obstacle = 3
+        self.staticobstacle = 8
         self.GenerateObstacle()
         self.staticObstacle()
         self.risk()

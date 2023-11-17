@@ -105,7 +105,7 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
             # risk_cost = config.risk_cost * calc_risk_cost(trajectory,config)
             final_cost = to_goal_cost + speed_cost + ob_cost
             # print(risk_cost)
-
+            # print(speed_cost)
             # search minimum trajectory
             if min_cost >= final_cost :
 
