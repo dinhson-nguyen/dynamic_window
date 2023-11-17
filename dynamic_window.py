@@ -98,10 +98,13 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
             trajectory = predict_trajectory(x_init, v, y, config)
             # calc cost
             to_goal_cost = config.to_goal_cost_gain * calc_to_goal_cost(trajectory, goal)
+            # print(to_goal_cost)
             speed_cost = config.speed_cost_gain * (config.max_speed - trajectory[-1, 3])
             ob_cost = config.obstacle_cost_gain * calc_obstacle_cost(trajectory, ob, config)
-
+            # print(ob_cost)
+            # risk_cost = config.risk_cost * calc_risk_cost(trajectory,config)
             final_cost = to_goal_cost + speed_cost + ob_cost
+            # print(risk_cost)
 
             # search minimum trajectory
             if min_cost >= final_cost :
@@ -109,15 +112,10 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
 
                 if abs(v) < config.robot_stuck_flag_cons \
                         and abs(x[3]) < config.robot_stuck_flag_cons:
-                    # to ensure the robot do not get stuck in
-                    # best v=0 m/s (in front of an obstacle) and
-                    # best omega=0 rad/s (heading to the goal with
-                    # angle difference of 0)
+
                     best_u[1] = -config.max_delta_yaw_rate
-                    # best_u[0] = config.v_resolution
                     best_u[0] = 0
                     continue
-
                 min_cost = final_cost
                 best_u = [v, y]
                 best_trajectory = trajectory
@@ -125,7 +123,7 @@ def calc_control_and_trajectory(x, dw, config, goal, ob):
             remove_traject.append(trajectory)
 
 
-
+    # print(min_cost)
     return best_u, best_trajectory, remove_traject
 
 
@@ -139,6 +137,7 @@ def calc_obstacle_cost(trajectory, ob, config):
     dy = trajectory[:, 1] - oy[:, None]
     r = np.hypot(dx, dy)
 
+
     if config.robot_type == RobotType.rectangle:
         yaw = trajectory[:, 2]
         rot = np.array([[np.cos(yaw), -np.sin(yaw)], [np.sin(yaw), np.cos(yaw)]])
@@ -147,19 +146,40 @@ def calc_obstacle_cost(trajectory, ob, config):
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
         local_ob = np.array([local_ob @ x for x in rot])
         local_ob = local_ob.reshape(-1, local_ob.shape[-1])
-        upper_check = local_ob[:, 0] <= config.robot_length / 2 + 0.3
-        right_check = local_ob[:, 1] <= config.robot_width / 2 + 0.3
-        bottom_check = local_ob[:, 0] >= -config.robot_length / 2 - 0.3
-        left_check = local_ob[:, 1] >= -config.robot_width / 2 - 0.3
+        upper_check = (local_ob[:, 0] + 1) <= config.robot_length / 2
+        right_check = (local_ob[:, 1]+ 1) <= config.robot_width / 2
+        bottom_check = (local_ob[:, 0] - 1)>= -config.robot_length / 2
+        left_check = (local_ob[:, 1]- 1) >= -config.robot_width / 2
         if (np.logical_and(np.logical_and(upper_check, right_check),
                            np.logical_and(bottom_check, left_check))).any():
+
             return float("Inf")
     elif config.robot_type == RobotType.circle:
         if np.array(r <= config.robot_radius).any():
             return float("Inf")
 
     min_r = np.min(r)
-    return 1.0 / min_r  # OK
+    # print(min_r)
+    if min_r <2:
+        return 2/min_r + 1
+    else:
+        return 1.0 / min_r  # OK
+
+
+def calc_risk_cost(trajectory, config):
+    x = trajectory[:, 0]
+    y = trajectory[:, 1]
+    t= []
+    cost =0
+    for i in range(0,len(x)):
+        t.append([x[i]//1,y[i]//1])
+
+    for item in t:
+        if item in config.static_risk or item in config.riskinside :
+            cost = cost + 0.25
+    print(cost)
+    return cost
+
 
 
 def calc_to_goal_cost(trajectory, goal):

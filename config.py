@@ -10,11 +10,11 @@ riskinside = []
 static_ob= []
 static_risk = []
 for z in m.obstacle_point:
-    ob.append([z.x,z.y])
+    ob.append([z.x+0.5,z.y+0.5])
 for z in m.risk_inside:
     riskinside.append([z.x,z.y])
 for z in m.staticObs:
-    static_ob.append([z.x,z.y])
+    static_ob.append([z.x+0.5,z.y+0.5])
 for z in m.static_risk_inside:
     static_risk.append([z.x,z.y])
 class RobotType(Enum):
@@ -38,7 +38,7 @@ class Config:
         self.predict_time = 3.0  # [s]
         self.to_goal_cost_gain = 0.2
         self.speed_cost_gain = 0.5
-        self.obstacle_cost_gain = 1.5
+        self.obstacle_cost_gain = 0.2
         self.robot_stuck_flag_cons = 0.1  # constant to prevent robot stucked
         self.robot_type = RobotType.circle
 
@@ -47,7 +47,7 @@ class Config:
         self.robot_radius = 2.0  # [m] for collision check
 
         # if robot_type == RobotType.rectangle
-        self.robot_width = 0.5  # [m] for collision check
+        self.robot_width = 0.75  # [m] for collision check
         self.robot_length = 1.0  # [m] for collision check
         # obstacles [x(m) y(m), ....]
         self.riskinside = np.array(riskinside)
@@ -55,7 +55,7 @@ class Config:
         self.ob = np.array(ob)
         self.static_ob = np.array(static_ob)
         self.static_risk = np.array(static_risk)
-
+        self.risk_cost = 0.2
     @property
     def robot_type(self):
         return self._robot_type

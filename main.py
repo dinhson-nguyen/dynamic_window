@@ -55,8 +55,6 @@ def consumer(data_queue,data_queue2):
             ob.append([item[0] + t[0],item[1] - t[1]])
 
         ob = np.concatenate((config.static_ob,np.array(ob)))
-        # ob= np.array(ob)
-        # riskinside_1 = np.concatenate((data_queue2.get(),config.static_risk))
         riskinside_1 = []
         for item in data_queue2.get():
             riskinside_1.append([item[0] + t[0],item[1] - t[1]])
@@ -69,24 +67,17 @@ def consumer(data_queue,data_queue2):
         time.sleep(0.05)
         x_limits = ax.get_xlim()
         y_limits = ax.get_ylim()
-
-
-
         if show_animation:
             ax.clear()
-            print(riskinside_1)
             ax.axis('equal')
             ax.axis('on')
-            # for stopping simulation with the esc key.
-
             for item in remove_traject:
                 ax.plot(item[:, 0], item[:, 1], linestyle='dashed',color='palegreen')
             ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1], "-g")
             plt.plot(x[0], x[1], "xr")
             ax.plot(goal[0], goal[1], "xb")
-
             for item in ob:
-                rec = Rectangle((item[0], item[1]), width=1, height=1, color='black')
+                rec = Rectangle((item[0]-0.5, item[1]-0.5), width=1, height=1, color='black')
                 ax.add_patch(rec)
             for item in riskinside_1:
                 rec = Rectangle((item[0], item[1]), width=1, height=1, color='gray')
@@ -106,20 +97,16 @@ def consumer(data_queue,data_queue2):
             ax.set_xlim(x_limits)
             ax.set_ylim(y_limits)
             plt.pause(0.0001)
-
         # check reaching goal
         dist_to_goal = math.hypot(x[0] - goal[0], x[1] - goal[1])
         if dist_to_goal <= config.robot_radius:
             print("Goal!!")
             break
 
-
     print("Done")
     if show_animation:
-        
         plt.plot(trajectory[:, 0], trajectory[:, 1], "-r")
         plt.pause(0.0001)
-
         plt.show()
 
 
